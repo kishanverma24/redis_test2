@@ -9,13 +9,15 @@ let redisClient;
     console.log(error);
   });
   await redisClient.connect();
+  console.log(redisClient);
+  
 })();
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.get("calculate-data", async (req, res) => {
+app.get("/calculate", async (req, res) => {
   //complex db call
   try {
     let calculatedData = 0;
@@ -25,7 +27,7 @@ app.get("calculate-data", async (req, res) => {
       return res.json({ data: cachedData });
     }
 
-    for (let i = 0; i < 100000000; i++) {
+    for (let i = 0; i < 10000000000; i++) {
       calculatedData += i;
     }
     await redisClient.set("calculatedData", calculatedData);
