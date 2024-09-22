@@ -1,4 +1,5 @@
 const redis = require("redis");
+const axios = require("axios");
 const express = require("express");
 const app = express();
 
@@ -9,12 +10,29 @@ let redisClient;
     console.log(error);
   });
   await redisClient.connect();
-  console.log(redisClient);
-  
 })();
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
+});
+
+app.get("/data", async (req, res) => {
+  let data = "";
+  try {
+    const cachedData = await redisClient.get("data");
+    if (cachedData) {
+      return res.json({ data: JSON.parse(cachedData) });
+    }
+    await axios
+      .get("https://jsonplaceholder.typicode.com/posts")
+      .then((response) => {
+        data = response.data;
+      });
+    await redisClient.set("data", JSON.stringify(data));
+    return res.json({ data });
+  } catch (error) {
+    return res.json({ error: error.message });
+  }
 });
 
 app.get("/calculate", async (req, res) => {
